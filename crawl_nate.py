@@ -108,7 +108,7 @@ def crawl_news_article(url, image_dir="downloaded_images"):
         "User-Agent": "Mozilla/5.0"
     }
 
-    response = requests.get(url, headers=headers)
+    response = requests.gevt(url, headers=headers)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "html.parser")
 
