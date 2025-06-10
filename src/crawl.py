@@ -1,7 +1,6 @@
 from playwright.sync_api import sync_playwright
 from datetime import datetime
 import os
-from openai import OpenAI
 
 prompt_template = """
 너는 유튜브 쇼츠 제작을 위한 콘텐츠 큐레이터야. 내가 여러 개의 뉴스 제목들을 제공할 테니, 그 중 **가장 자극적이고 시청자의 호기심을 강하게 자극할 수 있는 {}개의 뉴스 제목**만 골라줘. 가장 자극적인 뉴스 순으로 정렬해서 정리해.
@@ -24,11 +23,10 @@ prompt_template = """
 {}
 """
 class MSNNewsScraper:
-    def __init__(self, today, max_links, openapi_key):
-        self.browser = None
+    def __init__(self, today, max_links, openai_client):
         self.today = today
         self.max_links = max_links
-        self.openapi_key = openapi_key
+        self.openai_client = openai_client
 
     def get_article_links(self, page):
         for _ in range(5):
@@ -64,11 +62,8 @@ class MSNNewsScraper:
         
         max_link_lim = 30 if self.max_links+5 > 30 else self.max_links+5
         prompt = prompt_template.format(max_link_lim, '\n'.join(titles))
-        print(prompt)
-        quit()
-        client = OpenAI(
-            api_key=self.openapi_key
-        )
+
+        client = self.openai_client
         
         response = client.responses.create(
             model="gpt-4o",
@@ -154,10 +149,15 @@ class MSNNewsScraper:
 
             browser.close()
 
-def crawl_news(today, urls, openapi_key, max_links=20):
+def crawl_news(today, urls, openai_client, max_links=20):
+    scraper = MSNNewsScraper(
+        openai_client=openai_client,
+        today=today,
+        max_links=max_links
+    )
+    
     for subject, topic_url in urls.items():
         print(f"\n\n{subject} 크롤링 중...")
-        scraper = MSNNewsScraper(openapi_key=openapi_key, today=today, max_links=max_links)
         scraper.run(subject, topic_url)
 
 # 사용 예시
