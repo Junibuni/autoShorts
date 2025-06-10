@@ -31,7 +31,7 @@ class MSNNewsScraper:
                     if href and href.startswith("http"):
                         links.append(href)
 
-                if len(links) >= self.max_links:
+                if len(links) >= self.max_links+10:
                     break
             except Exception as e:
                 print(f"⚠️ 카드 접근 실패: {e}")
@@ -56,7 +56,7 @@ class MSNNewsScraper:
         if not body:
             return None
         
-        if len(body) < 300 or body.count('.') < 2:
+        if len(body) < 400 or body.count('.') < 2:
             print("  ➤ 본문이 너무 짧아서 제외됨")
             return None
 
@@ -91,6 +91,9 @@ class MSNNewsScraper:
             print(f"[✅] {len(links)}개 링크 수집됨.")
 
             for idx, link in enumerate(links, 1):
+                if idx > self.max_links:
+                    print(f"[✅] {idx-1}개 스크래핑 완료.")
+                    break
                 print(f"\n[{idx}] 스크래핑 중: {link}")
                 try:
                     content = self.scrape_article(page, link)
@@ -106,7 +109,7 @@ class MSNNewsScraper:
 
 def crawl_news(today, urls, max_links=20):
     for subject, topic_url in urls.items():
-        print(f"{subject} 크롤링 중...")
+        print(f"\n\n{subject} 크롤링 중...")
         scraper = MSNNewsScraper(today=today, max_links=max_links)
         scraper.run(subject, topic_url)
 
