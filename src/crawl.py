@@ -28,6 +28,11 @@ class MSNNewsScraper:
         self.today = today
         self.max_links = max_links
         self.openai_client = openai_client
+        
+        if not os.path.exists("articles"):
+            os.makedirs("articles")
+        if not os.path.exists(f"articles/{today}"):
+            os.makedirs(f"articles/{today}")
 
     def get_article_links(self, page):
         for _ in range(5):
@@ -105,14 +110,12 @@ class MSNNewsScraper:
         return f"# {title}\n\n{body}"
 
     def save_article(self, content, url, subject):
-        today_date = self.today
-        if not os.path.exists("articles"):
-            os.makedirs("articles")
-        if not os.path.exists(f"articles/{today_date}"):
-            os.makedirs(f"articles/{today_date}")
-        if not os.path.exists(f"articles/{today_date}/{subject}"):
-            os.makedirs(f"articles/{today_date}/{subject}")
-        filename = f"articles/{today_date}/{subject}/article_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
+        topic_path = os.path.join("articles", self.today, subject)
+        
+        if not os.path.exists(topic_path):
+            os.makedirs(topic_path)
+            
+        filename = os.path.join(topic_path, f"article_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md")
         with open(filename, "w", encoding="utf-8") as f:
             f.write(f"원본 URL: {url}\n\n")
             f.write(content)
