@@ -1,6 +1,7 @@
 from playwright.sync_api import sync_playwright
 from datetime import datetime
 import os
+import re
 
 prompt_template = """
 너는 유튜브 쇼츠 제작을 위한 콘텐츠 큐레이터야. 내가 여러 개의 뉴스 제목들을 제공할 테니, 그 중 **가장 자극적이고 시청자의 호기심을 강하게 자극할 수 있는 {}개의 뉴스 제목**만 골라줘. 가장 자극적인 뉴스 순으로 정렬해서 정리해.
@@ -13,9 +14,9 @@ prompt_template = """
 
 ❗ 아래 형식의 **리스트만 출력**해. 다른 텍스트는 절대 포함하지 마. 정확히 아래처럼 출력해:
 
-"선정된 제목1",
-"선정된 제목2",
-"선정된 제목3",
+"[제목 ID] 제목1",
+"[제목 ID] 제목2",
+"[제목 ID] 제목3",
 ...
 
 아래는 뉴스 제목 목록이야:
@@ -39,8 +40,10 @@ class MSNNewsScraper:
             return []
 
         cards = container.query_selector_all(":scope > clf-ca-card")
-        titles_and_links = []
+        links = []
         titles = []
+        
+        news_idx = 0
 
         for card in cards:
             try:
@@ -51,10 +54,11 @@ class MSNNewsScraper:
                     href = cs_card.get_attribute("href")
                     title = cs_card.get_attribute("title")
                     if href and href.startswith("http"):
-                        titles.append(title)
-                        titles_and_links.append((title, href))
+                        titles.append(f"{news_idx}. {title}")
+                        links.append(href)
+                        news_idx += 1
 
-                if len(titles_and_links) >= 30:
+                if len(links) >= 30:
                     break
             except Exception as e:
                 print(f"⚠️ 카드 접근 실패: {e}")
@@ -62,22 +66,23 @@ class MSNNewsScraper:
         
         max_link_lim = 30 if self.max_links+5 > 30 else self.max_links+5
         prompt = prompt_template.format(max_link_lim, '\n'.join(titles))
+        print(prompt)
 
         client = self.openai_client
         
         response = client.responses.create(
-            model="gpt-4o",
+            model="o4-mini",
             instructions="You are a helpful assistant that strictly follows the prompt.",
             input=prompt
         )
         
         reply = response.output_text
-        reply_list = [line.strip().strip('",').replace(" ", "") for line in reply.strip().splitlines() if line.strip()]
+        print(reply)
+        link_indices = [int(re.search(r"\[(\d+)\]", line).group(1)) for line in reply.strip().splitlines() if re.search(r"\d", line)]
+        print([links[i] for i in link_indices])
+        quit()
 
-        a_to_b = {a.replace(" ", ""): b for a, b in titles_and_links}
-        result = [a_to_b[x] for x in reply_list]
-
-        return result
+        return [links[i] for i in link_indices]
 
 
     def scrape_article(self, page, url):

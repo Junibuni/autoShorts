@@ -9,7 +9,6 @@ from src.crawl import crawl_news
 load_dotenv()
 
 def main():
-    openapi_key = os.environ.get("OPENAI_API_KEY")
     openai_client = OpenAI(
         api_key=os.environ.get("OPENAI_API_KEY"),
     )
