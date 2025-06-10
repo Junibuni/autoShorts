@@ -2,11 +2,17 @@ import os
 from datetime import datetime
 
 from src.crawl import crawl_news
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def main():
+    openapi_key = os.environ.get("OPENAI_API_KEY")
+
     urls = {
         "economics": "https://www.msn.com/ko-kr/channel/topic/%EA%B2%BD%EC%A0%9C%ED%95%99/tp-Y_55a61254-2d9d-4a2a-813f-8197f063dda3?ocid=msedgntp",
-        "politics": "https://www.msn.com/ko-kr/channel/topic/%EC%A0%95%EC%B9%98%20%EA%B3%BC%ED%95%99/tp-Y_e756b287-f1d3-471f-82e3-cec8cf485a26?ocid=msedgntp",
+        "politics_kr": "https://www.msn.com/ko-kr/channel/topic/%EC%A0%95%EC%B9%98/tp-Y_6aa79722-759d-4dbc-af04-abaabe57a18f?ocid=msedgntp",
+        "politics_world": "https://www.msn.com/ko-kr/channel/topic/%EC%A0%95%EC%B9%98%20%EA%B3%BC%ED%95%99/tp-Y_e756b287-f1d3-471f-82e3-cec8cf485a26?ocid=msedgntp",
         "entertainment": "https://www.msn.com/ko-kr/channel/topic/%EC%97%B0%EC%98%88%EC%9D%B8/tp-Y_94abd02a-491e-4628-abc7-389d81057107?ocid=msedgntp",
         "sports": "https://www.msn.com/ko-kr/channel/topic/%EC%8A%A4%ED%8F%AC%EC%B8%A0/tp-Y_bc40ffcd-5e18-475c-8752-cb7ca85085a9?ocid=msedgntp",
         "football": "https://www.msn.com/ko-kr/channel/topic/%EC%B6%95%EA%B5%AC/tp-Y_1b38bbd7-c382-4735-a899-86bf31bb9aaa?ocid=msedgntp",
@@ -21,7 +27,7 @@ def main():
         "history": "https://www.msn.com/ko-kr/channel/topic/%EC%97%AD%EC%82%AC/tp-Y_7af2f24c-fb58-4e34-8e33-ef9b0e1c99de?ocid=msedgntp"        
     }
     today = datetime.now().strftime('%Y%m%d')
-    crawl_news(today, urls, max_links=5)
+    crawl_news(today, urls, openapi_key, max_links=5)
     
 if __name__ == "__main__":
     main()

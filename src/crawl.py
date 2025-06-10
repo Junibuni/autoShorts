@@ -1,12 +1,34 @@
 from playwright.sync_api import sync_playwright
 from datetime import datetime
 import os
+from openai import OpenAI
 
+prompt_template = """
+너는 유튜브 쇼츠 제작을 위한 콘텐츠 큐레이터야. 내가 여러 개의 뉴스 제목들을 제공할 테니, 그 중 **가장 자극적이고 시청자의 호기심을 강하게 자극할 수 있는 {}개의 뉴스 제목**만 골라줘. 가장 자극적인 뉴스 순으로 정렬해서 정리해.
+
+다음 기준을 적용해서 판단해:
+1. 감정 자극 강도가 높은가? (불안, 분노, 놀람, 위기감 등)
+2. 궁금증을 유발하는 미완성된 정보나 반전이 있는가?
+3. 정치, 경제, 사회 등 시청자의 실생활에 영향을 줄 수 있는 민감한 이슈인가?
+4. 유튜브 쇼츠 포맷(15초 내외, 빠른 전개)에 어울릴 만큼 임팩트가 있는가?
+
+❗ 아래 형식의 **리스트만 출력**해. 다른 텍스트는 절대 포함하지 마. 정확히 아래처럼 출력해:
+
+"선정된 제목1",
+"선정된 제목2",
+"선정된 제목3",
+...
+
+아래는 뉴스 제목 목록이야:
+
+{}
+"""
 class MSNNewsScraper:
-    def __init__(self, today, max_links):
+    def __init__(self, today, max_links, openapi_key):
         self.browser = None
         self.today = today
         self.max_links = max_links
+        self.openapi_key = openapi_key
 
     def get_article_links(self, page):
         for _ in range(5):
@@ -19,7 +41,8 @@ class MSNNewsScraper:
             return []
 
         cards = container.query_selector_all(":scope > clf-ca-card")
-        links = []
+        titles_and_links = []
+        titles = []
 
         for card in cards:
             try:
@@ -28,16 +51,38 @@ class MSNNewsScraper:
                 cs_card = shadow.query_selector("cs-card cs-content-card")
                 if cs_card:
                     href = cs_card.get_attribute("href")
+                    title = cs_card.get_attribute("title")
                     if href and href.startswith("http"):
-                        links.append(href)
+                        titles.append(title)
+                        titles_and_links.append((title, href))
 
-                if len(links) >= self.max_links+10:
+                if len(titles_and_links) >= 30:
                     break
             except Exception as e:
                 print(f"⚠️ 카드 접근 실패: {e}")
                 continue
+        
+        max_link_lim = 30 if self.max_links+5 > 30 else self.max_links+5
+        prompt = prompt_template.format(max_link_lim, '\n'.join(titles))
+        print(prompt)
+        quit()
+        client = OpenAI(
+            api_key=self.openapi_key
+        )
+        
+        response = client.responses.create(
+            model="gpt-4o",
+            instructions="You are a helpful assistant that strictly follows the prompt.",
+            input=prompt
+        )
+        
+        reply = response.output_text
+        reply_list = [line.strip().strip('",').replace(" ", "") for line in reply.strip().splitlines() if line.strip()]
 
-        return links
+        a_to_b = {a.replace(" ", ""): b for a, b in titles_and_links}
+        result = [a_to_b[x] for x in reply_list]
+
+        return result
 
 
     def scrape_article(self, page, url):
@@ -109,10 +154,10 @@ class MSNNewsScraper:
 
             browser.close()
 
-def crawl_news(today, urls, max_links=20):
+def crawl_news(today, urls, openapi_key, max_links=20):
     for subject, topic_url in urls.items():
         print(f"\n\n{subject} 크롤링 중...")
-        scraper = MSNNewsScraper(today=today, max_links=max_links)
+        scraper = MSNNewsScraper(openapi_key=openapi_key, today=today, max_links=max_links)
         scraper.run(subject, topic_url)
 
 # 사용 예시
