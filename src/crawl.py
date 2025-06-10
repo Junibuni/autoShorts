@@ -37,7 +37,7 @@ class MSNNewsScraper:
         if not os.path.exists(today_path):
             os.makedirs(today_path)
 
-    def get_article_links(self, page):
+    def get_article_links(self, page, subject):
         for _ in range(5):
             page.mouse.wheel(0, 3000)
             page.wait_for_timeout(1000)
@@ -73,7 +73,10 @@ class MSNNewsScraper:
                 continue
         
         max_link_lim = 30 if self.max_links+5 > 30 else self.max_links+5
-        prompt = PROMPT_TEMPLATE.format(max_link_lim, '\n'.join(titles))
+        titles_prompt = '\n'.join(titles)
+        if subject == "politics_kr":
+            titles_prompt += "\n\n 이재명, 윤석열, 대통령 키워드와 밀접한 뉴스를 선정해줘."
+        prompt = PROMPT_TEMPLATE.format(max_link_lim, titles_prompt)
 
         client = self.openai_client
         
@@ -135,7 +138,7 @@ class MSNNewsScraper:
             page.wait_for_timeout(5000)
 
             print("[🔍] 기사 링크 추출 중...")
-            links = self.get_article_links(page)
+            links = self.get_article_links(page, subject)
             print(f"[✅] {len(links)}개 링크 수집됨.")
 
             idx = 1
