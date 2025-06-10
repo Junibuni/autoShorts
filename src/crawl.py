@@ -90,7 +90,8 @@ class MSNNewsScraper:
             links = self.get_article_links(page)
             print(f"[✅] {len(links)}개 링크 수집됨.")
 
-            for idx, link in enumerate(links, 1):
+            idx = 1
+            for link in links:
                 if idx > self.max_links:
                     print(f"[✅] {idx-1}개 스크래핑 완료.")
                     break
@@ -100,6 +101,7 @@ class MSNNewsScraper:
                     if content:
                         filename = self.save_article(content, link, subject)
                         print(f"  ➤ 저장 완료: {filename}")
+                        idx += 1
                     else:
                         print("  ➤ 기사 본문 추출 실패")
                 except Exception as e:
