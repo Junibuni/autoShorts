@@ -3,11 +3,12 @@ from datetime import datetime
 import os
 
 class MSNNewsScraper:
-    def __init__(self, today):
+    def __init__(self, today, max_links):
         self.browser = None
         self.today = today
+        self.max_links = max_links
 
-    def get_article_links(self, page, max_links=10):
+    def get_article_links(self, page):
         for _ in range(5):
             page.mouse.wheel(0, 3000)
             page.wait_for_timeout(1000)
@@ -30,7 +31,7 @@ class MSNNewsScraper:
                     if href and href.startswith("http"):
                         links.append(href)
 
-                if len(links) >= max_links:
+                if len(links) >= self.max_links:
                     break
             except Exception as e:
                 print(f"⚠️ 카드 접근 실패: {e}")
@@ -54,6 +55,10 @@ class MSNNewsScraper:
 
         if not body:
             return None
+        
+        if len(body) < 300 or body.count('.') < 2:
+            print("  ➤ 본문이 너무 짧아서 제외됨")
+            return None
 
         return f"# {title}\n\n{body}"
 
@@ -71,7 +76,7 @@ class MSNNewsScraper:
             f.write(content)
         return filename
 
-    def run(self, subject, topic_url, max_links=10):
+    def run(self, subject, topic_url):
         with sync_playwright() as p:
             browser = p.chromium.launch(
                 headless=False,
@@ -82,7 +87,7 @@ class MSNNewsScraper:
             page.wait_for_timeout(5000)
 
             print("[🔍] 기사 링크 추출 중...")
-            links = self.get_article_links(page, max_links=max_links)
+            links = self.get_article_links(page)
             print(f"[✅] {len(links)}개 링크 수집됨.")
 
             for idx, link in enumerate(links, 1):
@@ -99,18 +104,11 @@ class MSNNewsScraper:
 
             browser.close()
 
-def crawl_news(today, max_links=20):
-    urls = {
-        "economics": "https://www.msn.com/ko-kr/channel/topic/%EA%B2%BD%EC%A0%9C%ED%95%99/tp-Y_55a61254-2d9d-4a2a-813f-8197f063dda3?ocid=msedgntp",
-        "politics": "https://www.msn.com/ko-kr/channel/topic/%EC%A0%95%EC%B9%98/tp-Y_6aa79722-759d-4dbc-af04-abaabe57a18f?ocid=msedgntp",
-        "entertainment": "https://www.msn.com/ko-kr/channel/topic/%EC%97%B0%EC%98%88%EC%9D%B8/tp-Y_94abd02a-491e-4628-abc7-389d81057107?ocid=msedgntp",
-        "sports": "https://www.msn.com/ko-kr/channel/topic/%EC%8A%A4%ED%8F%AC%EC%B8%A0/tp-Y_bc40ffcd-5e18-475c-8752-cb7ca85085a9?ocid=msedgntp",
-    }
-
+def crawl_news(today, urls, max_links=20):
     for subject, topic_url in urls.items():
         print(f"{subject} 크롤링 중...")
-        scraper = MSNNewsScraper(today=today)
-        scraper.run(subject, topic_url, max_links)
+        scraper = MSNNewsScraper(today=today, max_links=max_links)
+        scraper.run(subject, topic_url)
 
 # 사용 예시
 if __name__ == "__main__":
