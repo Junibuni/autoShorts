@@ -66,7 +66,6 @@ class MSNNewsScraper:
         
         max_link_lim = 30 if self.max_links+5 > 30 else self.max_links+5
         prompt = prompt_template.format(max_link_lim, '\n'.join(titles))
-        print(prompt)
 
         client = self.openai_client
         
@@ -79,8 +78,6 @@ class MSNNewsScraper:
         reply = response.output_text
         print(reply)
         link_indices = [int(re.search(r"\[(\d+)\]", line).group(1)) for line in reply.strip().splitlines() if re.search(r"\d", line)]
-        print([links[i] for i in link_indices])
-        quit()
 
         return [links[i] for i in link_indices]
 
