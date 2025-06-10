@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 import re
 
-prompt_template = """
+PROMPT_TEMPLATE = """
 너는 유튜브 쇼츠 제작을 위한 콘텐츠 큐레이터야. 내가 여러 개의 뉴스 제목들을 제공할 테니, 그 중 **가장 자극적이고 시청자의 호기심을 강하게 자극할 수 있는 {}개의 뉴스 제목**만 골라줘. 가장 자극적인 뉴스 순으로 정렬해서 정리해.
 
 다음 기준을 적용해서 판단해:
@@ -24,15 +24,18 @@ prompt_template = """
 {}
 """
 class MSNNewsScraper:
-    def __init__(self, today, max_links, openai_client):
+    def __init__(self, today, max_links, openai_client, article_path="articles"):
         self.today = today
         self.max_links = max_links
         self.openai_client = openai_client
+        self.article_path = article_path
         
-        if not os.path.exists("articles"):
-            os.makedirs("articles")
-        if not os.path.exists(f"articles/{today}"):
-            os.makedirs(f"articles/{today}")
+        if not os.path.exists(article_path):
+            os.makedirs(article_path)
+            
+        today_path = os.path.join(article_path, today)
+        if not os.path.exists(today_path):
+            os.makedirs(today_path)
 
     def get_article_links(self, page):
         for _ in range(5):
@@ -70,7 +73,7 @@ class MSNNewsScraper:
                 continue
         
         max_link_lim = 30 if self.max_links+5 > 30 else self.max_links+5
-        prompt = prompt_template.format(max_link_lim, '\n'.join(titles))
+        prompt = PROMPT_TEMPLATE.format(max_link_lim, '\n'.join(titles))
 
         client = self.openai_client
         
@@ -110,7 +113,7 @@ class MSNNewsScraper:
         return f"# {title}\n\n{body}"
 
     def save_article(self, content, url, subject):
-        topic_path = os.path.join("articles", self.today, subject)
+        topic_path = os.path.join(self.article_path, self.today, subject)
         
         if not os.path.exists(topic_path):
             os.makedirs(topic_path)
