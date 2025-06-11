@@ -9,7 +9,7 @@ from src.crawler import crawl_news
 load_dotenv()
     
 def main():
-    type = "msn"
+    type = "nate"
     openai_client = OpenAI(
         api_key=os.environ.get("OPENAI_API_KEY"),
     )

@@ -137,7 +137,7 @@ class MSNNewsScraper:
             page.wait_for_timeout(5000)
 
             print("[🔍] 기사 링크 추출 중...")
-            links = self.get_article_links(page, subject)
+            links = self.get_article_links(page)
             print(f"[✅] {len(links)}개 링크 수집됨.")
 
             idx = 1
