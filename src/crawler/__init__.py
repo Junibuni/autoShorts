@@ -17,4 +17,5 @@ def crawl_news(type: str, params: dict):
     
     entry = _dispatch[type]
     needed = {k: params[k] for k in entry["args"] if k in params}
+    print("\n", "="*20, "\n뉴스 크롤링 중...")
     return entry["func"](**needed)

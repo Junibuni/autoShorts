@@ -58,6 +58,7 @@ def generate_script(openai_client, article):
     return reply
 
 def articles_to_script(openai_client, article_path="articles"):
+    print("\n", "="*20, "\n프롬프트 작성 중...")
     for root, dirs, files in os.walk(article_path):
         processed_any = 0
         for file in files:

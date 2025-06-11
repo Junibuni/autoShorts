@@ -5,16 +5,11 @@ from bs4 import BeautifulSoup
 import re
 class NATENewsScraper:
     def __init__(self, today, max_links, article_path="articles"):
-        self.article_path = os.path.join(article_path, "nate")
+        self.article_path = article_path
         self.max_links = max_links
         self.today = today
-        
-        if not os.path.exists(self.article_path):
-            os.makedirs(self.article_path)
-            
-        today_path = os.path.join(self.article_path, today)
-        if not os.path.exists(today_path):
-            os.makedirs(today_path)
+                    
+        os.makedirs(article_path, exist_ok=True)
     
     def get_article_links(self, page):
         headers = {
@@ -98,10 +93,9 @@ class NATENewsScraper:
             return None
     
     def save_article(self, content, url, subject, idx):
-        topic_path = os.path.join(self.article_path, self.today, subject)
+        topic_path = os.path.join(self.article_path, subject)
         
-        if not os.path.exists(topic_path):
-            os.makedirs(topic_path)
+        os.makedirs(topic_path, exist_ok=True)
             
         filename = os.path.join(topic_path, f"article_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{idx}.md")
         with open(filename, "w", encoding="utf-8") as f:

@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 
 from src.crawler import crawl_news
 from src.generate_scripts import articles_to_script
+from src.generate_images import json_to_images
 
 load_dotenv()
 
@@ -15,7 +16,7 @@ def main():
         api_key=os.environ.get("OPENAI_API_KEY"),
     )
     today = datetime.now().strftime('%Y%m%d')
-    save_path = "articles"
+    save_path = os.path.join("articles", type, today)
     
     kwargs_dict = {
         "today": today,
@@ -24,9 +25,11 @@ def main():
         "save_path": save_path
     }
     
-    crawl_news(type, kwargs_dict)
+    # crawl_news(type, kwargs_dict)
     
-    articles_to_script(openai_client, os.path.join(save_path, type, today))
+    # articles_to_script(openai_client, save_path)
+    
+    json_to_images(openai_client, save_path)
     
 if __name__ == "__main__":
     main()
