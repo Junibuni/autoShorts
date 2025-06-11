@@ -3,11 +3,11 @@ from . import crawl_msn, crawl_nate
 _dispatch = {
     "msn": {
         "func": crawl_msn.crawl_news,
-        "args": ("today", "openai_client", "max_links",)
+        "args": ("today", "openai_client", "max_links", "save_path")
     },
     "nate": {
         "func": crawl_nate.crawl_news,
-        "args": ("today", "max_links",)
+        "args": ("today", "max_links", "save_path")
     }
 }
 

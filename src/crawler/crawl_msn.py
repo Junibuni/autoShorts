@@ -159,11 +159,12 @@ class MSNNewsScraper:
 
             browser.close()
 
-def crawl_news(today, openai_client, max_links=20):
+def crawl_news(today, openai_client, max_links=20, save_path='articles'):
     scraper = MSNNewsScraper(
         openai_client=openai_client,
         today=today,
-        max_links=max_links
+        max_links=max_links,
+        article_path=save_path
     )
     
     from src.urls import URLS_MSN

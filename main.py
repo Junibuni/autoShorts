@@ -18,7 +18,8 @@ def main():
     kwargs_dict = {
         "today": today,
         "openai_client": openai_client,
-        "max_links": 5
+        "max_links": 5,
+        "save_path": "articles"
     }
     
     crawl_news(type, kwargs_dict)
