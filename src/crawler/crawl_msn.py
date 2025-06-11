@@ -28,16 +28,16 @@ class MSNNewsScraper:
         self.today = today
         self.max_links = max_links
         self.openai_client = openai_client
-        self.article_path = article_path
+        self.article_path = os.path.join(article_path, "msn")
         
-        if not os.path.exists(article_path):
-            os.makedirs(article_path)
+        if not os.path.exists(self.article_path):
+            os.makedirs(self.article_path)
             
-        today_path = os.path.join(article_path, today)
+        today_path = os.path.join(self.article_path, today)
         if not os.path.exists(today_path):
             os.makedirs(today_path)
 
-    def get_article_links(self, page, subject):
+    def get_article_links(self, page):
         for _ in range(5):
             page.mouse.wheel(0, 3000)
             page.wait_for_timeout(1000)
@@ -74,8 +74,7 @@ class MSNNewsScraper:
         
         max_link_lim = 30 if self.max_links+5 > 30 else self.max_links+5
         titles_prompt = '\n'.join(titles)
-        if subject == "politics_kr":
-            titles_prompt += "\n\n 이재명, 윤석열, 대통령 키워드와 밀접한 뉴스를 선정해줘."
+
         prompt = PROMPT_TEMPLATE.format(max_link_lim, titles_prompt)
 
         client = self.openai_client
@@ -160,14 +159,17 @@ class MSNNewsScraper:
 
             browser.close()
 
-def crawl_news(today, urls, openai_client, max_links=20):
+def crawl_news(today, openai_client, max_links=20):
     scraper = MSNNewsScraper(
         openai_client=openai_client,
         today=today,
         max_links=max_links
     )
     
-    for subject, topic_url in urls.items():
+    from src.urls import URLS_MSN
+    for subject, topic_url in URLS_MSN.items():
+        if not topic_url:
+            continue
         print(f"\n\n{subject} 크롤링 중...")
         scraper.run(subject, topic_url)
 
