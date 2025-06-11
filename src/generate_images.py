@@ -48,11 +48,12 @@ def generate_image(openai_client, prompt_kwargs, output_path):
         return True
         # print(f"✅ 저장 완료: {output_path}")
     except Exception as e:
-        print(f"❌ 실패 ({prompt}): {e}")
+        print(f"❌ 실패 ([{style}] {prompt}): {e}")
         return False
 
 def json_to_images(openai_client, base_path="articles"):
     print("\n", "="*20, "\n이미지 변환 중...")
+    file_type = ".json"
     for root, dirs, files in os.walk(base_path):
         processed_any = 0
         for file in files:
@@ -79,7 +80,7 @@ def json_to_images(openai_client, base_path="articles"):
                 processed_any += 1
         
         if processed_any:
-            if len(files) == processed_any:
+            if len([f for f in os.listdir(root) if f.endswith(file_type)]) == processed_any:
                 print(f"✅ {os.path.basename(root)} 처리 완료")
             else:
                 print(f"⚠️ {os.path.basename(root)}: {processed_any}개 처리 완료")

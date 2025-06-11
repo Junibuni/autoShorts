@@ -25,9 +25,9 @@ def main():
         "save_path": save_path
     }
     
-    # crawl_news(type, kwargs_dict)
+    crawl_news(type, kwargs_dict)
     
-    # articles_to_script(openai_client, save_path)
+    articles_to_script(openai_client, save_path)
     
     json_to_images(openai_client, save_path)
     
