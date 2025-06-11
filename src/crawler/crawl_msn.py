@@ -86,7 +86,7 @@ class MSNNewsScraper:
         )
         
         reply = response.output_text
-        print(reply)
+
         link_indices = [int(re.search(r"\[(\d+)\]", line).group(1)) for line in reply.strip().splitlines() if re.search(r"\d", line)]
 
         return [links[i] for i in link_indices]
